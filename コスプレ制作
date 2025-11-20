@@ -1,0 +1,122 @@
+// App.jsx
+import { useState } from "react";
+
+function App() {
+  const [selectedCharacter, setSelectedCharacter] = useState("");
+  const [eyeChoice, setEyeChoice] = useState("");
+  const [lipChoice, setLipChoice] = useState("");
+  const [adviceLog, setAdviceLog] = useState([]);
+  const [scanResult, setScanResult] = useState(null); // 仮スキャン結果
+
+  const characters = ["キャラA", "キャラB", "キャラC"];
+  const eyes = ["カラコン1", "カラコン2", "カラコン3"];
+  const lips = ["リップ1", "リップ2", "リップ3"];
+
+  const handleAdvice = (msg) => {
+    setAdviceLog([...adviceLog, msg]);
+  };
+
+  // 仮のスキャンボタン
+  const handleScan = () => {
+    // 仮に完璧な採寸データを作る
+    const simulatedScan = {
+      height: "160cm",
+      chest: "80cm",
+      waist: "60cm",
+      hips: "85cm",
+    };
+    setScanResult(simulatedScan);
+    handleAdvice("採寸スキャン完了！3Dモデルに反映されました。");
+  };
+
+  return (
+    <div className="p-6 max-w-2xl mx-auto font-sans">
+      <h1 className="text-2xl font-bold mb-4">ゆうかコスプレ準備アプリ</h1>
+
+      {/* 採寸スキャン */}
+      <div className="mb-4">
+        <button
+          onClick={handleScan}
+          className="bg-green-500 text-white px-4 py-2 rounded"
+        >
+          採寸スキャン
+        </button>
+        {scanResult && (
+          <div className="mt-2 p-2 border rounded bg-gray-50">
+            <p>身長: {scanResult.height}</p>
+            <p>胸囲: {scanResult.chest}</p>
+            <p>ウエスト: {scanResult.waist}</p>
+            <p>ヒップ: {scanResult.hips}</p>
+          </div>
+        )}
+      </div>
+
+      {/* キャラ選択 */}
+      <div className="mb-4">
+        <label className="block font-medium mb-1">キャラクターを選択</label>
+        <select
+          value={selectedCharacter}
+          onChange={(e) => setSelectedCharacter(e.target.value)}
+          className="border p-2 rounded w-full"
+        >
+          <option value="">選んでね</option>
+          {characters.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* 目選択 */}
+      <div className="mb-4">
+        <label className="block font-medium mb-1">目（カラコン）を選択</label>
+        <select
+          value={eyeChoice}
+          onChange={(e) => setEyeChoice(e.target.value)}
+          className="border p-2 rounded w-full"
+        >
+          <option value="">選んでね</option>
+          {eyes.map((e) => (
+            <option key={e} value={e}>{e}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* 口選択 */}
+      <div className="mb-4">
+        <label className="block font-medium mb-1">口（リップ）を選択</label>
+        <select
+          value={lipChoice}
+          onChange={(e) => setLipChoice(e.target.value)}
+          className="border p-2 rounded w-full"
+        >
+          <option value="">選んでね</option>
+          {lips.map((l) => (
+            <option key={l} value={l}>{l}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* リアルタイムアドバイス */}
+      <div className="mb-4">
+        <button
+          onClick={() => handleAdvice("ここをこうすると自然に見えるよ")}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          リアルタイムアドバイス
+        </button>
+      </div>
+
+      {/* アドバイスログ */}
+      <div>
+        <h2 className="font-bold mb-2">アドバイスログ</h2>
+        <ul className="list-disc pl-5">
+          {adviceLog.map((msg, idx) => (
+            <li key={idx}>{msg}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+export default App;
