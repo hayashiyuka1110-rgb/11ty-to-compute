@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ゆうかリアルタイムコスプレアプリ</title>
+<style>
+  body { font-family: system-ui; background: #fff8fc; padding: 16px; }
+  .card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+  input, select, button { font-size: 15px; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb; }
+  button { cursor: pointer; }
+  #camera { width: 100%; max-width: 320px; height: auto; border-radius: 12px; margin-bottom: 12px; }
+  .small { font-size: 13px; color: #666; margin-bottom: 6px; white-space: pre-line; }
+</style>
+</head>
+<body>
+<h1>ゆうかリアルタイムコスプレアプリ</h1>
+
+<div class="card">
+  <h3>採寸</h3>
+  <button id="measureBtn">▶ 採寸開始</button>
+  <div id="measureResult" class="small">未採寸</div>
+</div>
+
+<div class="card">
+  <h3>着せ替え（キャラ入力 or 立ち絵）</h3>
+  <input id="charInput" placeholder="キャラ名 or 画像URL">
+  <button id="loadChar">読み込み</button>
+  <div id="outfits" class="small">衣装・ウィッグ・小物・武器はここに表示</div>
+</div>
+
+<div class="card">
+  <h3>メイク選択</h3>
+  <button id="eyeBtn">目（アイライナー等）選択</button>
+  <button id="lipBtn">口/リップ選択</button>
+  <div id="makeupLog" class="small">選択なし</div>
+</div>
+
+<div class="card">
+  <h3>リアルタイムアドバイス</h3>
+  <video id="camera" autoplay playsinline></video>
+  <button id="startAdvice">アドバイス開始</button>
+  <div id="adviceLog" class="small">まだ何もありません</div>
+</div>
+
+<div class="card">
+  <h3>口パク・表情評価</h3>
+  <input id="videoURL" placeholder="動画URLを入力">
+  <button id="startEval">評価開始</button>
+  <div id="evalLog" class="small">評価待ち</div>
+</div>
+
+<div class="card">
+  <h3>保存・読み込み</h3>
+  <button id="exportBtn">JSONで保存</button>
+  <input type="file" id="importFile">
+</div>
+
+<script>
+const state = {
+  measure: null,
+  character: '',
+  outfits: [],
+  makeup: {eye: [], lip: []},
+  advice: [],
+  evaluation: []
+};
+
+// 採寸
+document.getElementById('measureBtn').onclick = ()=>{
+  // 実際はセンサーやカメラで採寸可能
+  state.measure = {height:160, bust:80, waist:60, hip:88};
+  document.getElementById('measureResult').textContent = `身長 ${state.measure.height}cm / バスト ${state.measure.bust}cm / ウエスト ${state.measure.waist}cm / ヒップ ${state.measure.hip}cm`;
+};
+
+// キャラ読み込み
+document.getElementById('loadChar').onclick = ()=>{
+  const name = document.getElementById('charInput').value;
+  if(!name) return;
+  state.character = name;
+  // AI解析で衣装・ウィッグ・小物・武器を取得する処理
+  // メイクは別に無限に選択可能
+  state.outfits = ['衣装A','ウィッグB','靴C','武器D'];
+  document.getElementById('outfits').textContent = state.outfits.join(', ');
+};
+
+// メイク
+document.getElementById('eyeBtn').onclick = ()=>{
+  state.makeup.eye.push('アイライナー例');
+  renderMakeup();
+};
+document.getElementById('lipBtn').onclick = ()=>{
+  state.makeup.lip.push('リップ例');
+  renderMakeup();
+};
+function renderMakeup(){
+  document.getElementById('makeupLog').textContent = `目: ${state.makeup.eye.join(', ')} / 口: ${state.makeup.lip.join(', ')}`;
+}
+
+// カメラ
+const video = document.getElementById('camera');
+navigator.mediaDevices.getUserMedia({video:true}).then(stream=>{video.srcObject=stream;});
+
+// リアルタイムアドバイス
+document.getElementById('startAdvice').onclick = ()=>{
+  const msg = `矢印で指示: ここをこうすると良いよ`;
+  state.advice.push(msg);
+  document.getElementById('adviceLog').textContent = state.advice.join('\n');
+};
+
+// 口パク評価
+document.getElementById('startEval').onclick = ()=>{
+  const url = document.getElementById('videoURL').value;
+  if(!url) return;
+  const msg = `動画 ${url} を評価しました。ここはこうするとより自然です。`;
+  state.evaluation.push(msg);
+  document.getElementById('evalLog').textContent = state.evaluation.join('\n');
+};
+
+// 保存・読み込み
+document.getElementById('exportBtn').onclick = ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'yuka_app_'+Date.now()+'.json';
+  a.click();
+};
+document.getElementById('importFile').onchange = (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    Object.assign(state, JSON.parse(reader.result));
+    alert('読み込み完了');
+  };
+  reader.readAsText(file);
+};
+</script>
+</body>
+</html> 
